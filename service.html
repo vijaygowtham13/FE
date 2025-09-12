@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Service</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  body{font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,#02021a 0%,#00102b 100%);color:#fff;margin:0;min-height:100vh}
+  .top{padding:22px}
+  .card{max-width:640px;margin:32px auto;background:rgba(255,255,255,0.04);padding:22px;border-radius:14px}
+  h2{margin:0 0 8px}
+  .pricing{display:flex;gap:12px;margin:14px 0}
+  .pricebox{background:#001a2b;padding:10px;border-radius:8px;min-width:120px;text-align:center}
+  .desc{color:#cfe8ff}
+  .bookbtn{margin-top:18px;padding:12px;background:linear-gradient(45deg,#00f6ff,#00ffaa);border:none;color:#001;font-weight:700;border-radius:10px;cursor:pointer;width:100%}
+  /* bottom sheet */
+  .sheet{position:fixed;left:0;right:0;bottom:-100%;height:auto;background:linear-gradient(180deg,rgba(10,10,30,0.98),rgba(4,4,12,0.98));border-top-left-radius:18px;border-top-right-radius:18px;padding:18px;box-shadow:0 -10px 40px rgba(0,0,0,0.6);transition:bottom 0.35s ease;z-index:50}
+  .sheet.open{bottom:0}
+  .slots{display:flex;gap:10px;flex-wrap:wrap}
+  .slot{background:#001a2b;padding:10px 14px;border-radius:8px;cursor:pointer;border:1px solid rgba(255,255,255,0.03)}
+  .modeBtns{display:flex;gap:12px;margin-top:12px}
+  .modeBtns button{flex:1;padding:10px;border-radius:8px;border:none;cursor:pointer}
+  .modeBtns .active{background:linear-gradient(45deg,#00f6ff,#00ffaa);color:#000;font-weight:700}
+</style>
+</head>
+<body>
+<div class="top">
+  <a href="services.html" style="color:#9fd7ff;text-decoration:none">&larr; Back</a>
+</div>
+
+<div class="card" id="card">
+  <h2 id="name">Service</h2>
+  <div class="desc" id="description">loading</div>
+  <div class="pricing">
+    <div class="pricebox">
+      <div style="font-size:13px;color:#9fd7ff">Chat</div>
+      <div id="price_chat" style="font-weight:700">--</div>
+    </div>
+    <div class="pricebox">
+      <div style="font-size:13px;color:#9fd7ff">Video Call</div>
+      <div id="price_video" style="font-weight:700">--</div>
+    </div>
+  </div>
+  <button class="bookbtn" id="bookNow">Book Now</button>
+</div>
+
+<!-- Bottom sheet -->
+<div class="sheet" id="sheet">
+  <div style="width:70px;height:6px;background:#fff;border-radius:4px;margin:0 auto 10px;opacity:0.12"></div>
+  <h3 style="margin:8px 0 12px">Select your slot start time</h3>
+  <div class="slots" id="slots">
+    <!-- times will be appended -->
+  </div>
+
+  <div class="modeBtns" style="margin-top:14px">
+    <button id="btnChat" class="active">Chat</button>
+    <button id="btnVideo">Video Call</button>
+  </div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const service_id = params.get('service_id');
+let selectedTime = null;
+let selectedMode = 'chat';
+let serviceData = null;
+
+async function load() {
+  const res = await fetch(`http://127.0.0.1:8000/api/services/${service_id}/`);
+  serviceData = await res.json();
+  document.getElementById('name').innerText = serviceData.name;
+  document.getElementById('description').innerText = serviceData.description;
+  document.getElementById('price_chat').innerText = serviceData.price_chat + " /-";
+  document.getElementById('price_video').innerText = serviceData.price_video + " /-";
+}
+load();
+
+document.getElementById('bookNow').addEventListener('click', () => {
+  const sheet = document.getElementById('sheet');
+  sheet.classList.add('open');
+  buildSlots();
+});
+
+function buildSlots() {
+  // example times
+  const times = ["04:00 PM","04:30 PM","05:00 PM","05:30 PM"];
+  const slotsEl = document.getElementById('slots');
+  slotsEl.innerHTML = '';
+  times.forEach(t => {
+    const el = document.createElement('div');
+    el.className = 'slot';
+    el.innerText = t;
+    el.onclick = () => {
+      document.querySelectorAll('.slot').forEach(x=>x.style.borderColor='transparent');
+      el.style.borderColor = '#00f6ff';
+      selectedTime = t;
+      // check available consultant for this slot and selected mode
+      checkConsultant(t);
+    };
+    slotsEl.appendChild(el);
+  });
+}
+
+document.getElementById('btnChat').onclick = () => {
+  selectedMode = 'chat';
+  document.getElementById('btnChat').classList.add('active');
+  document.getElementById('btnVideo').classList.remove('active');
+};
+document.getElementById('btnVideo').onclick = () => {
+  selectedMode = 'video';
+  document.getElementById('btnVideo').classList.add('active');
+  document.getElementById('btnChat').classList.remove('active');
+};
+
+async function checkConsultant(t) {
+  // use today's date as slot_date
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  const slot_date = `${yyyy}-${mm}-${dd}`;
+
+  const res = await fetch(`http://127.0.0.1:8000/api/available-consultant/?service_id=${service_id}&slot_date=${slot_date}&slot_time=${encodeURIComponent(t)}&mode=${selectedMode}`);
+  const data = await res.json();
+  if(data.consultant_id) {
+    // open booking page with params
+    // pass consultant id (selected by backend) and chosen mode,time,date and fee
+    const fee = selectedMode === 'chat' ? serviceData.price_chat : serviceData.price_video;
+    window.location.href = `booking.html?consultant_id=${data.consultant_id}&service_id=${service_id}&slot_date=${slot_date}&slot_time=${encodeURIComponent(t)}&mode=${selectedMode}&fee=${fee}`;
+  } else {
+    alert("No consultant available for that slot. Please choose another.");
+  }
+}
+</script>
+</body>
+</html>

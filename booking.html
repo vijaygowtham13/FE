@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Booking Details</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body{font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,#02021a 0%,#00102b 100%);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0}
+  .wrap{width:420px;background:rgba(255,255,255,0.03);padding:24px;border-radius:12px}
+  h2{margin:0 0 12px}
+  .card{background:rgba(0,0,0,0.45);padding:14px;border-radius:10px;margin-bottom:12px}
+  .label{font-size:13px;color:#bcdff8;margin-bottom:6px}
+  input, select, textarea{width:100%;padding:10px;border-radius:8px;border:none;background:#021428;color:#fff;margin-bottom:12px}
+  button{padding:12px;border-radius:8px;border:none;background:linear-gradient(45deg,#00f6ff,#00ffaa);color:#001;font-weight:700;width:100%;cursor:pointer}
+  .small{font-size:13px;color:#cfe8ff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h2>Booking Details</h2>
+  <div class="card" id="bookingSummary"></div>
+
+  <div>
+    <div class="label">Age</div>
+    <input id="age" type="number" placeholder="Age">
+    <div class="label">Gender</div>
+    <select id="gender"><option>Male</option><option>Female</option><option>Other</option></select>
+    <div class="label">Region</div>
+    <input id="region" type="text" placeholder="Region">
+    <button id="payBtn">Pay & Confirm</button>
+    <p id="response" style="color:#ff7b7b;font-weight:600"></p>
+  </div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const consultant_id = params.get('consultant_id');
+const service_id = params.get('service_id');
+const slot_date = params.get('slot_date');
+const slot_time = decodeURIComponent(params.get('slot_time') || '');
+const mode = params.get('mode');
+const fee = params.get('fee');
+
+document.getElementById('bookingSummary').innerHTML = `
+  <div class="small">Consultant ID: ${consultant_id}</div>
+  <div class="small" style="font-weight:700;margin-top:8px">Slot Date: ${slot_date}</div>
+  <div class="small">Slot Time: ${slot_time}</div>
+  <div class="small">Mode: ${mode}</div>
+  <div style="margin-top:8px;font-weight:700">Consulting Fee: ₹ ${fee}</div>
+`;
+
+document.getElementById('payBtn').addEventListener('click', async () => {
+  const age = document.getElementById('age').value;
+  const gender = document.getElementById('gender').value;
+  const region = document.getElementById('region').value;
+  const phone = localStorage.getItem('verified_phone') || '';
+
+  if(!phone) { document.getElementById('response').innerText = 'Phone not verified.'; return; }
+  if(!age || !gender || !region) { document.getElementById('response').innerText = 'Please fill all fields.'; return; }
+
+  const payload = {
+    consultant_id: consultant_id,
+    phone: phone,
+    slot_date: slot_date,
+    slot_time: slot_time,
+    mode: mode,
+    age: age,
+    gender: gender,
+    region: region,
+    consulting_fee: fee
+  };
+
+  try {
+    const res = await fetch('http://127.0.0.1:8000/api/create-booking/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if(res.status === 201) {
+      // redirect to start payment
+      window.location.href = data.redirect_url;
+    } else {
+      document.getElementById('response').innerText = data.error || data.message || 'Booking failed';
+    }
+  } catch (err) {
+    document.getElementById('response').innerText = 'Network error';
+  }
+});
+</script>
+</body>
+</html>

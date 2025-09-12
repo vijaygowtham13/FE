@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Details</title>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top, #0a0f24, #000);
+    overflow: hidden;
+    color: #fff;
+  }
+
+  body::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: url("https://www.transparenttextures.com/patterns/stardust.png");
+    animation: moveStars 100s linear infinite;
+  }
+
+  @keyframes moveStars {
+    from { background-position: 0 0; }
+    to { background-position: 10000px 10000px; }
+  }
+
+  .container {
+    position: relative;
+    background: rgba(20, 20, 40, 0.85);
+    padding: 40px 30px;
+    border-radius: 20px;
+    width: 400px;
+    box-shadow: 0 0 25px rgba(0, 200, 255, 0.7);
+    text-align: center;
+    z-index: 1;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  h2 {
+    margin-bottom: 25px;
+    font-size: 28px;
+    background: linear-gradient(45deg, #0ff, #00f6ff, #00ffaa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+input, textarea {
+  width: 80%;
+  padding: 12px 15px;
+  margin: 0 auto 20px auto;  /* centers elements */
+  display: block;            /* ensures proper centering */
+  border: 1px solid #00e6ff;
+  border-radius: 8px;
+  font-size: 16px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+}
+
+
+  input::placeholder, textarea::placeholder {
+    color: #aaa;
+  }
+
+  input:focus, textarea:focus {
+    border-color: #0ff;
+    outline: none;
+    box-shadow: 0 0 10px #00f6ff;
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(45deg, #0ff, #00f6ff, #00ffaa);
+    color: #000;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #00e6ff;
+  }
+
+  #response {
+    margin-top: 15px;
+    font-weight: bold;
+    min-height: 20px;
+    color: #ff6b6b;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>🚀 User Details</h2>
+  <input type="number" id="age" placeholder="Enter Age">
+  <textarea id="permanent_address" placeholder="Enter Permanent Address"></textarea>
+  <textarea id="current_address" placeholder="Enter Current Address"></textarea>
+  <button onclick="submitDetails()">Submit</button>
+  <p id="response"></p>
+</div>
+
+<script>
+function submitDetails() {
+  const phone = localStorage.getItem("verified_phone");
+  const age = document.getElementById("age").value;
+  const permanent_address = document.getElementById("permanent_address").value;
+  const current_address = document.getElementById("current_address").value;
+
+  if(!phone || !age || !permanent_address || !current_address) {
+    document.getElementById("response").innerText = "All fields required!";
+    return;
+  }
+
+  fetch("http://127.0.0.1:8000/api/save-user-details/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone, age, permanent_address, current_address })
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("response").innerText = data.message;
+    if(data.message.includes("success")) {
+      setTimeout(() => {
+        document.getElementById("response").innerText = "";
+        document.getElementById("age").value = "";
+        document.getElementById("permanent_address").value = "";
+        document.getElementById("current_address").value = "";
+      }, 2000);
+    }
+  })
+  .catch(err => { document.getElementById("response").innerText = "Error submitting details!"; });
+}
+</script>
+</body>
+</html>
