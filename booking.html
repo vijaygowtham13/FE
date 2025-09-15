@@ -6,14 +6,15 @@
 <title>Booking Details</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  body{font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,#02021a 0%,#00102b 100%);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0}
-  .wrap{width:420px;background:rgba(255,255,255,0.03);padding:24px;border-radius:12px}
+  body{font-family:Inter,system-ui,Arial;background:#f9fafb;color:#111827;min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0}
+  .wrap{width:420px;background:#fff;padding:24px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.08)}
   h2{margin:0 0 12px}
-  .card{background:rgba(0,0,0,0.45);padding:14px;border-radius:10px;margin-bottom:12px}
-  .label{font-size:13px;color:#bcdff8;margin-bottom:6px}
-  input, select, textarea{width:100%;padding:10px;border-radius:8px;border:none;background:#021428;color:#fff;margin-bottom:12px}
-  button{padding:12px;border-radius:8px;border:none;background:linear-gradient(45deg,#00f6ff,#00ffaa);color:#001;font-weight:700;width:100%;cursor:pointer}
-  .small{font-size:13px;color:#cfe8ff}
+  .card{background:#f3f4f6;padding:14px;border-radius:10px;margin-bottom:12px}
+  .label{font-size:13px;color:#374151;margin-bottom:6px;font-weight:600}
+  input, select, textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #d1d5db;background:#fff;color:#111827;margin-bottom:12px}
+  button{padding:12px;border-radius:8px;border:none;background:#16a34a;color:#fff;font-weight:700;width:100%;cursor:pointer}
+  button:hover{background:#15803d}
+  .small{font-size:13px;color:#4b5563}
 </style>
 </head>
 <body>
@@ -29,7 +30,7 @@
     <div class="label">Region</div>
     <input id="region" type="text" placeholder="Region">
     <button id="payBtn">Pay & Confirm</button>
-    <p id="response" style="color:#ff7b7b;font-weight:600"></p>
+    <p id="response" style="color:#dc2626;font-weight:600"></p>
   </div>
 </div>
 
@@ -79,7 +80,6 @@ document.getElementById('payBtn').addEventListener('click', async () => {
     });
     const data = await res.json();
     if(res.status === 201) {
-      // redirect to start payment
       window.location.href = data.redirect_url;
     } else {
       document.getElementById('response').innerText = data.error || data.message || 'Booking failed';

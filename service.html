@@ -6,27 +6,29 @@
 <title>Service</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  body{font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,#02021a 0%,#00102b 100%);color:#fff;margin:0;min-height:100vh}
+  body{font-family:Inter,system-ui,Arial;background:#f9fafb;color:#111827;margin:0;min-height:100vh}
   .top{padding:22px}
-  .card{max-width:640px;margin:32px auto;background:rgba(255,255,255,0.04);padding:22px;border-radius:14px}
+  .card{max-width:640px;margin:32px auto;background:#fff;padding:22px;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,0.08)}
   h2{margin:0 0 8px}
   .pricing{display:flex;gap:12px;margin:14px 0}
-  .pricebox{background:#001a2b;padding:10px;border-radius:8px;min-width:120px;text-align:center}
-  .desc{color:#cfe8ff}
-  .bookbtn{margin-top:18px;padding:12px;background:linear-gradient(45deg,#00f6ff,#00ffaa);border:none;color:#001;font-weight:700;border-radius:10px;cursor:pointer;width:100%}
+  .pricebox{background:#f3f4f6;padding:12px;border-radius:8px;min-width:120px;text-align:center}
+  .desc{color:#4b5563}
+  .bookbtn{margin-top:18px;padding:12px;background:#16a34a;border:none;color:#fff;font-weight:700;border-radius:10px;cursor:pointer;width:100%}
+  .bookbtn:hover{background:#15803d}
   /* bottom sheet */
-  .sheet{position:fixed;left:0;right:0;bottom:-100%;height:auto;background:linear-gradient(180deg,rgba(10,10,30,0.98),rgba(4,4,12,0.98));border-top-left-radius:18px;border-top-right-radius:18px;padding:18px;box-shadow:0 -10px 40px rgba(0,0,0,0.6);transition:bottom 0.35s ease;z-index:50}
+  .sheet{position:fixed;left:0;right:0;bottom:-100%;background:#fff;border-top-left-radius:18px;border-top-right-radius:18px;padding:18px;box-shadow:0 -10px 30px rgba(0,0,0,0.15);transition:bottom 0.35s ease;z-index:50}
   .sheet.open{bottom:0}
   .slots{display:flex;gap:10px;flex-wrap:wrap}
-  .slot{background:#001a2b;padding:10px 14px;border-radius:8px;cursor:pointer;border:1px solid rgba(255,255,255,0.03)}
+  .slot{background:#f3f4f6;padding:10px 14px;border-radius:8px;cursor:pointer;border:1px solid #e5e7eb}
+  .slot:hover{border-color:#16a34a}
   .modeBtns{display:flex;gap:12px;margin-top:12px}
-  .modeBtns button{flex:1;padding:10px;border-radius:8px;border:none;cursor:pointer}
-  .modeBtns .active{background:linear-gradient(45deg,#00f6ff,#00ffaa);color:#000;font-weight:700}
+  .modeBtns button{flex:1;padding:10px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;cursor:pointer;font-weight:600}
+  .modeBtns .active{background:#16a34a;color:#fff;border:none}
 </style>
 </head>
 <body>
 <div class="top">
-  <a href="services.html" style="color:#9fd7ff;text-decoration:none">&larr; Back</a>
+  <a href="services.html" style="color:#2563eb;text-decoration:none;font-weight:600">&larr; Back</a>
 </div>
 
 <div class="card" id="card">
@@ -34,11 +36,11 @@
   <div class="desc" id="description">loading</div>
   <div class="pricing">
     <div class="pricebox">
-      <div style="font-size:13px;color:#9fd7ff">Chat</div>
+      <div style="font-size:13px;color:#6b7280">Chat</div>
       <div id="price_chat" style="font-weight:700">--</div>
     </div>
     <div class="pricebox">
-      <div style="font-size:13px;color:#9fd7ff">Video Call</div>
+      <div style="font-size:13px;color:#6b7280">Video Call</div>
       <div id="price_video" style="font-weight:700">--</div>
     </div>
   </div>
@@ -47,11 +49,9 @@
 
 <!-- Bottom sheet -->
 <div class="sheet" id="sheet">
-  <div style="width:70px;height:6px;background:#fff;border-radius:4px;margin:0 auto 10px;opacity:0.12"></div>
+  <div style="width:70px;height:6px;background:#d1d5db;border-radius:4px;margin:0 auto 10px;"></div>
   <h3 style="margin:8px 0 12px">Select your slot start time</h3>
-  <div class="slots" id="slots">
-    <!-- times will be appended -->
-  </div>
+  <div class="slots" id="slots"></div>
 
   <div class="modeBtns" style="margin-top:14px">
     <button id="btnChat" class="active">Chat</button>
@@ -83,7 +83,6 @@ document.getElementById('bookNow').addEventListener('click', () => {
 });
 
 function buildSlots() {
-  // example times
   const times = ["04:00 PM","04:30 PM","05:00 PM","05:30 PM"];
   const slotsEl = document.getElementById('slots');
   slotsEl.innerHTML = '';
@@ -92,10 +91,9 @@ function buildSlots() {
     el.className = 'slot';
     el.innerText = t;
     el.onclick = () => {
-      document.querySelectorAll('.slot').forEach(x=>x.style.borderColor='transparent');
-      el.style.borderColor = '#00f6ff';
+      document.querySelectorAll('.slot').forEach(x=>x.style.borderColor='#e5e7eb');
+      el.style.borderColor = '#16a34a';
       selectedTime = t;
-      // check available consultant for this slot and selected mode
       checkConsultant(t);
     };
     slotsEl.appendChild(el);
@@ -114,7 +112,6 @@ document.getElementById('btnVideo').onclick = () => {
 };
 
 async function checkConsultant(t) {
-  // use today's date as slot_date
   const d = new Date();
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth()+1).padStart(2,'0');
@@ -124,8 +121,6 @@ async function checkConsultant(t) {
   const res = await fetch(`http://127.0.0.1:8000/api/available-consultant/?service_id=${service_id}&slot_date=${slot_date}&slot_time=${encodeURIComponent(t)}&mode=${selectedMode}`);
   const data = await res.json();
   if(data.consultant_id) {
-    // open booking page with params
-    // pass consultant id (selected by backend) and chosen mode,time,date and fee
     const fee = selectedMode === 'chat' ? serviceData.price_chat : serviceData.price_video;
     window.location.href = `booking.html?consultant_id=${data.consultant_id}&service_id=${service_id}&slot_date=${slot_date}&slot_time=${encodeURIComponent(t)}&mode=${selectedMode}&fee=${fee}`;
   } else {
